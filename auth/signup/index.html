@@ -2,6 +2,16 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
+    <base data-auto-base href="" />
+    <script>
+      (function (b) {
+        try {
+          b.href = new URL(".", location.href).href;
+        } catch (e) {
+          b.href = "./";
+        }
+      })(document.querySelector("base[data-auto-base]"));
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>회원가입 · Demo Service</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
@@ -9,20 +19,21 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
     />
-    <link rel="stylesheet" href="./assets/css/styles.css" />
-    <script defer src="./assets/js/app-data.js"></script>
+    <link rel="stylesheet" href="../../assets/css/styles.css" />
+    <script src="../../assets/js/site-config.js"></script>
+    <script defer src="../../assets/js/app-data.js"></script>
   </head>
   <body>
     <header class="site-header">
       <div class="wrap inner">
-        <a class="brand" href="./index.html">
+        <a class="brand" href="../../index.html">
           <span class="brand-mark" aria-hidden="true">
-            <svg class="icon icon-lg"><use href="./assets/icons.svg#i-spark" /></svg>
+            <svg class="icon icon-lg"><use href="../../assets/icons.svg#i-spark" /></svg>
           </span>
           <span>Demo Service</span>
         </a>
         <nav class="nav">
-          <a class="btn btn-ghost btn-sm" href="./login.html">로그인</a>
+          <a class="btn btn-ghost btn-sm" href="../login/index.html">로그인</a>
         </nav>
       </div>
     </header>
@@ -30,10 +41,12 @@
     <main class="auth-shell">
       <div class="auth-card">
         <h1>
-          <svg class="icon" aria-hidden="true"><use href="./assets/icons.svg#i-user-plus" /></svg>
+          <svg class="icon" aria-hidden="true"><use href="../../assets/icons.svg#i-user-plus" /></svg>
           회원가입
         </h1>
-        <p class="hint">가입 정보는 브라우저 localStorage에만 저장됩니다.</p>
+        <p class="hint" id="signup-hint">
+          Supabase를 연결하지 않으면 이 PC 브라우저에만 저장됩니다. 연결하면 모든 방문자가 같은 데이터를 사용합니다.
+        </p>
         <div id="msg" class="msg" role="alert"></div>
         <form id="f">
           <div class="field">
@@ -49,22 +62,28 @@
             <input class="input" id="email" type="email" autocomplete="email" required />
           </div>
           <div class="field">
-            <label for="password">비밀번호 (4자 이상)</label>
+            <label for="password" id="pw-label">비밀번호 (4자 이상)</label>
             <input class="input" id="password" type="password" autocomplete="new-password" required minlength="4" />
           </div>
           <button class="btn btn-primary" type="submit">
-            <svg class="icon"><use href="./assets/icons.svg#i-check" /></svg>
+            <svg class="icon"><use href="../../assets/icons.svg#i-check" /></svg>
             가입 완료
           </button>
         </form>
         <p class="hint" style="margin-top: 18px; margin-bottom: 0">
-          이미 계정이 있나요? <a href="./login.html" style="color: #c4b5fd; text-decoration: underline">로그인</a>
+          이미 계정이 있나요? <a href="../login/index.html" style="color: #c4b5fd; text-decoration: underline">로그인</a>
         </p>
       </div>
     </main>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
+      document.addEventListener("DOMContentLoaded", async function () {
+        await AppData.init();
+        var pw = document.getElementById("password");
+        if (AppData.isRemote()) {
+          document.getElementById("pw-label").textContent = "비밀번호 (6자 이상, Supabase 정책)";
+          pw.minLength = 6;
+        }
         var msg = document.getElementById("msg");
         document.getElementById("f").addEventListener("submit", async function (e) {
           e.preventDefault();
@@ -76,11 +95,11 @@
               email: document.getElementById("email").value,
               password: document.getElementById("password").value,
             });
-            AppData.setSession(u);
+            await AppData.setSession(u);
             msg.className = "msg show ok";
             msg.textContent = "가입되었습니다. 보드로 이동합니다…";
             setTimeout(function () {
-              window.location.href = "./board.html";
+              window.location.href = "../../app/board/index.html";
             }, 600);
           } catch (err) {
             msg.textContent = err.message || "가입에 실패했습니다.";

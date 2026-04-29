@@ -2,6 +2,16 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
+    <base data-auto-base href="" />
+    <script>
+      (function (b) {
+        try {
+          b.href = new URL(".", location.href).href;
+        } catch (e) {
+          b.href = "./";
+        }
+      })(document.querySelector("base[data-auto-base]"));
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>문의하기 · Demo Service</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
@@ -9,20 +19,20 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
     />
-    <link rel="stylesheet" href="./assets/css/styles.css" />
+    <link rel="stylesheet" href="../../assets/css/styles.css" />
   </head>
   <body>
     <header class="site-header">
       <div class="wrap inner">
-        <a class="brand" href="./index.html">
+        <a class="brand" href="../../index.html">
           <span class="brand-mark" aria-hidden="true">
-            <svg class="icon icon-lg"><use href="./assets/icons.svg#i-spark" /></svg>
+            <svg class="icon icon-lg"><use href="../../assets/icons.svg#i-spark" /></svg>
           </span>
           <span>Demo Service</span>
         </a>
         <nav class="nav">
-          <a class="btn btn-ghost btn-sm" href="./index.html">
-            <svg class="icon"><use href="./assets/icons.svg#i-home" /></svg>
+          <a class="btn btn-ghost btn-sm" href="../../index.html">
+            <svg class="icon"><use href="../../assets/icons.svg#i-home" /></svg>
             홈
           </a>
         </nav>
@@ -32,7 +42,7 @@
     <main class="auth-shell">
       <div class="auth-card">
         <h1>
-          <svg class="icon" aria-hidden="true"><use href="./assets/icons.svg#i-mail" /></svg>
+          <svg class="icon" aria-hidden="true"><use href="../../assets/icons.svg#i-mail" /></svg>
           문의하기
         </h1>
         <p class="hint">문의 내용은 이 브라우저의 localStorage에만 기록됩니다.</p>
@@ -61,7 +71,7 @@
           </div>
           <div class="stack">
             <button class="btn btn-primary" type="submit">
-              <svg class="icon"><use href="./assets/icons.svg#i-send" /></svg>
+              <svg class="icon"><use href="../../assets/icons.svg#i-send" /></svg>
               제출하기
             </button>
           </div>

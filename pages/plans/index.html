@@ -2,6 +2,16 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
+    <base data-auto-base href="" />
+    <script>
+      (function (b) {
+        try {
+          b.href = new URL(".", location.href).href;
+        } catch (e) {
+          b.href = "./";
+        }
+      })(document.querySelector("base[data-auto-base]"));
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>구매 플랜 조회 · Demo Service</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
@@ -9,23 +19,23 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
     />
-    <link rel="stylesheet" href="./assets/css/styles.css" />
+    <link rel="stylesheet" href="../../assets/css/styles.css" />
   </head>
   <body>
     <header class="site-header">
       <div class="wrap inner">
-        <a class="brand" href="./index.html">
+        <a class="brand" href="../../index.html">
           <span class="brand-mark" aria-hidden="true">
-            <svg class="icon icon-lg"><use href="./assets/icons.svg#i-spark" /></svg>
+            <svg class="icon icon-lg"><use href="../../assets/icons.svg#i-spark" /></svg>
           </span>
           <span>Demo Service</span>
         </a>
         <nav class="nav">
-          <a class="btn btn-ghost btn-sm" href="./index.html">
-            <svg class="icon"><use href="./assets/icons.svg#i-home" /></svg>
+          <a class="btn btn-ghost btn-sm" href="../../index.html">
+            <svg class="icon"><use href="../../assets/icons.svg#i-home" /></svg>
             홈
           </a>
-          <a class="btn btn-primary btn-sm" href="./apply.html">신청하기</a>
+          <a class="btn btn-primary btn-sm" href="../apply/index.html">신청하기</a>
         </nav>
       </div>
     </header>
@@ -34,7 +44,7 @@
       <div class="wrap">
         <h1 style="margin: 0 0 8px; font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.02em">
           <svg class="icon" style="vertical-align: -0.15em" aria-hidden="true">
-            <use href="./assets/icons.svg#i-card" />
+            <use href="../../assets/icons.svg#i-card" />
           </svg>
           구매 플랜 조회
         </h1>
@@ -48,18 +58,18 @@
             <ul class="feature-list" style="margin: 0">
               <li>
                 <span class="tick" aria-hidden="true">
-                  <svg class="icon" width="16" height="16"><use href="./assets/icons.svg#i-check" /></svg>
+                  <svg class="icon" width="16" height="16"><use href="../../assets/icons.svg#i-check" /></svg>
                 </span>
                 <span>체험 보드 포함</span>
               </li>
               <li>
                 <span class="tick" aria-hidden="true">
-                  <svg class="icon" width="16" height="16"><use href="./assets/icons.svg#i-check" /></svg>
+                  <svg class="icon" width="16" height="16"><use href="../../assets/icons.svg#i-check" /></svg>
                 </span>
                 <span>브라우저 로컬 저장</span>
               </li>
             </ul>
-            <a class="btn btn-sm" style="margin-top: 18px" href="./login.html">체험하기</a>
+            <a class="btn btn-sm" style="margin-top: 18px" href="../../auth/login/index.html">체험하기</a>
           </article>
 
           <article
@@ -77,18 +87,18 @@
             <ul class="feature-list" style="margin: 0">
               <li>
                 <span class="tick" aria-hidden="true">
-                  <svg class="icon" width="16" height="16"><use href="./assets/icons.svg#i-check" /></svg>
+                  <svg class="icon" width="16" height="16"><use href="../../assets/icons.svg#i-check" /></svg>
                 </span>
                 <span>우선 지원 (데모)</span>
               </li>
               <li>
                 <span class="tick" aria-hidden="true">
-                  <svg class="icon" width="16" height="16"><use href="./assets/icons.svg#i-check" /></svg>
+                  <svg class="icon" width="16" height="16"><use href="../../assets/icons.svg#i-check" /></svg>
                 </span>
                 <span>추가 테마 예정</span>
               </li>
             </ul>
-            <a class="btn btn-primary btn-sm" style="margin-top: 18px" href="./apply.html">이 플랜으로 신청</a>
+            <a class="btn btn-primary btn-sm" style="margin-top: 18px" href="../apply/index.html">이 플랜으로 신청</a>
           </article>
 
           <article class="tile" style="display: flex; flex-direction: column">
@@ -98,18 +108,18 @@
             <ul class="feature-list" style="margin: 0">
               <li>
                 <span class="tick" aria-hidden="true">
-                  <svg class="icon" width="16" height="16"><use href="./assets/icons.svg#i-check" /></svg>
+                  <svg class="icon" width="16" height="16"><use href="../../assets/icons.svg#i-check" /></svg>
                 </span>
                 <span>전담 매니저 (데모)</span>
               </li>
               <li>
                 <span class="tick" aria-hidden="true">
-                  <svg class="icon" width="16" height="16"><use href="./assets/icons.svg#i-check" /></svg>
+                  <svg class="icon" width="16" height="16"><use href="../../assets/icons.svg#i-check" /></svg>
                 </span>
                 <span>맞춤 온보딩</span>
               </li>
             </ul>
-            <a class="btn btn-sm" style="margin-top: 18px" href="./contact.html">문의하기</a>
+            <a class="btn btn-sm" style="margin-top: 18px" href="../contact/index.html">문의하기</a>
           </article>
         </div>
       </div>

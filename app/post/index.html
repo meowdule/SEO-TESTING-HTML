@@ -2,6 +2,16 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
+    <base data-auto-base href="" />
+    <script>
+      (function (b) {
+        try {
+          b.href = new URL(".", location.href).href;
+        } catch (e) {
+          b.href = "./";
+        }
+      })(document.querySelector("base[data-auto-base]"));
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>게시글 · Demo Service</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
@@ -9,21 +19,22 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
     />
-    <link rel="stylesheet" href="./assets/css/styles.css" />
-    <script defer src="./assets/js/app-data.js"></script>
+    <link rel="stylesheet" href="../../assets/css/styles.css" />
+    <script src="../../assets/js/site-config.js"></script>
+    <script defer src="../../assets/js/app-data.js"></script>
   </head>
   <body>
     <header class="site-header">
       <div class="wrap inner">
-        <a class="brand" href="./index.html">
+        <a class="brand" href="../../index.html">
           <span class="brand-mark" aria-hidden="true">
-            <svg class="icon icon-lg"><use href="./assets/icons.svg#i-spark" /></svg>
+            <svg class="icon icon-lg"><use href="../../assets/icons.svg#i-spark" /></svg>
           </span>
           <span>Demo Service</span>
         </a>
         <nav class="nav">
-          <a class="btn btn-ghost btn-sm" href="./board.html">
-            <svg class="icon"><use href="./assets/icons.svg#i-chat" /></svg>
+          <a class="btn btn-ghost btn-sm" href="../board/index.html">
+            <svg class="icon"><use href="../../assets/icons.svg#i-chat" /></svg>
             목록
           </a>
         </nav>
@@ -34,8 +45,8 @@
       <div id="gone" class="empty" style="display: none">게시글을 찾을 수 없습니다.</div>
       <div id="main" style="display: none">
         <div class="head">
-          <a class="btn btn-ghost btn-sm" href="./board.html">
-            <svg class="icon flip-h" aria-hidden="true"><use href="./assets/icons.svg#i-arrow" /></svg>
+          <a class="btn btn-ghost btn-sm" href="../board/index.html">
+            <svg class="icon flip-h" aria-hidden="true"><use href="../../assets/icons.svg#i-arrow" /></svg>
             목록으로
           </a>
           <div id="ownerActions" style="display: none; gap: 8px; flex-wrap: wrap"></div>
@@ -46,7 +57,7 @@
 
         <section class="comments" aria-label="댓글">
           <h2>
-            <svg class="icon" style="vertical-align: -0.12em" aria-hidden="true"><use href="./assets/icons.svg#i-chat" /></svg>
+            <svg class="icon" style="vertical-align: -0.12em" aria-hidden="true"><use href="../../assets/icons.svg#i-chat" /></svg>
             댓글
           </h2>
           <div id="clist"></div>
@@ -56,7 +67,7 @@
               <textarea class="textarea" id="ct" placeholder="댓글을 입력하세요" style="min-height: 88px"></textarea>
             </div>
             <button class="btn btn-primary btn-sm" type="submit">
-              <svg class="icon"><use href="./assets/icons.svg#i-add" /></svg>
+              <svg class="icon"><use href="../../assets/icons.svg#i-add" /></svg>
               댓글 등록
             </button>
           </form>
@@ -86,18 +97,20 @@
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        var user = AppData.requireSession();
+      document.addEventListener("DOMContentLoaded", async function () {
+        await AppData.init();
+        var ICONS = "../../assets/icons.svg";
+        var user = await AppData.requireSession();
         if (!user) {
-          window.location.href = "./login.html";
+          window.location.href = "../../auth/login/index.html";
           return;
         }
         var id = new URLSearchParams(location.search).get("id");
         if (!id) {
-          window.location.href = "./board.html";
+          window.location.href = "../board/index.html";
           return;
         }
-        var post = AppData.getPost(id);
+        var post = await AppData.getPost(id);
         if (!post) {
           document.getElementById("gone").style.display = "block";
           return;
@@ -123,7 +136,7 @@
         main.style.display = "block";
         document.getElementById("title").textContent = post.title;
         document.getElementById("meta").textContent =
-          AppData.displayName(post.authorId) + " · 수정: " + fmt(post.updatedAt);
+          (await AppData.displayName(post.authorId)) + " · 수정: " + fmt(post.updatedAt);
         document.getElementById("body").textContent = post.body;
         document.title = post.title + " · Demo Service";
 
@@ -133,8 +146,12 @@
           oa.style.display = "flex";
           oa.setAttribute("aria-label", "내 글 작업");
           oa.innerHTML =
-            '<button type="button" class="btn btn-sm" id="editBtn"><svg class="icon"><use href="./assets/icons.svg#i-edit"/></svg>수정</button>' +
-            '<button type="button" class="btn btn-danger btn-sm" id="delBtn"><svg class="icon"><use href="./assets/icons.svg#i-trash"/></svg>삭제</button>';
+            '<button type="button" class="btn btn-sm" id="editBtn"><svg class="icon"><use href="' +
+            ICONS +
+            '#i-edit"/></svg>수정</button>' +
+            '<button type="button" class="btn btn-danger btn-sm" id="delBtn"><svg class="icon"><use href="' +
+            ICONS +
+            '#i-trash"/></svg>삭제</button>';
         }
 
         var emodal = document.getElementById("emodal");
@@ -151,11 +168,11 @@
         }
         if (isOwner) {
           document.getElementById("editBtn").addEventListener("click", openE);
-          document.getElementById("delBtn").addEventListener("click", function () {
+          document.getElementById("delBtn").addEventListener("click", async function () {
             if (!confirm("이 글과 댓글을 모두 삭제할까요?")) return;
             try {
-              AppData.deletePost(user.id, post.id);
-              window.location.href = "./board.html";
+              await AppData.deletePost(user.id, post.id);
+              window.location.href = "../board/index.html";
             } catch (err) {
               alert(err.message);
             }
@@ -164,20 +181,20 @@
           emodal.addEventListener("click", function (e) {
             if (e.target === emodal) closeE();
           });
-          document.getElementById("ef").addEventListener("submit", function (e) {
+          document.getElementById("ef").addEventListener("submit", async function (e) {
             e.preventDefault();
             emsg.className = "msg";
             try {
-              AppData.upsertPost(user.id, {
+              await AppData.upsertPost(user.id, {
                 id: post.id,
                 title: document.getElementById("et").value,
                 body: document.getElementById("eb").value,
               });
-              post = AppData.getPost(post.id);
+              post = await AppData.getPost(post.id);
               document.getElementById("title").textContent = post.title;
               document.getElementById("body").textContent = post.body;
               document.getElementById("meta").textContent =
-                AppData.displayName(post.authorId) + " · 수정: " + fmt(post.updatedAt);
+                (await AppData.displayName(post.authorId)) + " · 수정: " + fmt(post.updatedAt);
               closeE();
             } catch (err) {
               emsg.textContent = err.message || "저장 실패";
@@ -186,30 +203,36 @@
           });
         }
 
-        function renderComments() {
+        async function renderComments() {
           var box = document.getElementById("clist");
-          var cs = AppData.getComments(post.id);
+          var cs = await AppData.getComments(post.id);
           if (!cs.length) {
             box.innerHTML = '<p class="muted" style="margin: 0">아직 댓글이 없습니다.</p>';
             return;
           }
-          box.innerHTML = cs
-            .map(function (c) {
-              var mine = c.authorId === user.id;
-              var actions = mine
-                ? '<div class="c-actions">' +
-                  '<button type="button" class="btn btn-sm" data-act="ec" data-cid="' +
-                  c.id +
-                  '"><svg class="icon"><use href="./assets/icons.svg#i-edit"/></svg>수정</button>' +
-                  '<button type="button" class="btn btn-danger btn-sm" data-act="dc" data-cid="' +
-                  c.id +
-                  '"><svg class="icon"><use href="./assets/icons.svg#i-trash"/></svg>삭제</button></div>'
-                : "";
-              return (
-                '<div class="comment" data-cid="' +
+          var chunks = [];
+          for (var i = 0; i < cs.length; i++) {
+            var c = cs[i];
+            var mine = c.authorId === user.id;
+            var dn = await AppData.displayName(c.authorId);
+            var actions = mine
+              ? '<div class="c-actions">' +
+                '<button type="button" class="btn btn-sm" data-act="ec" data-cid="' +
+                c.id +
+                '"><svg class="icon"><use href="' +
+                ICONS +
+                '#i-edit"/></svg>수정</button>' +
+                '<button type="button" class="btn btn-danger btn-sm" data-act="dc" data-cid="' +
+                c.id +
+                '"><svg class="icon"><use href="' +
+                ICONS +
+                '#i-trash"/></svg>삭제</button></div>'
+              : "";
+            chunks.push(
+              '<div class="comment" data-cid="' +
                 c.id +
                 '"><div class="c-meta">' +
-                escapeHtml(AppData.displayName(c.authorId)) +
+                escapeHtml(dn) +
                 " · " +
                 fmt(c.updatedAt || c.createdAt) +
                 "</div><div class=\"cbody\">" +
@@ -217,34 +240,35 @@
                 "</div>" +
                 actions +
                 "</div>"
-              );
-            })
-            .join("");
+            );
+          }
+          box.innerHTML = chunks.join("");
 
           box.querySelectorAll('[data-act="dc"]').forEach(function (btn) {
-            btn.addEventListener("click", function () {
+            btn.addEventListener("click", async function () {
               var cid = btn.getAttribute("data-cid");
               if (!confirm("댓글을 삭제할까요?")) return;
               try {
-                AppData.deleteComment(user.id, cid);
-                renderComments();
+                await AppData.deleteComment(user.id, cid);
+                await renderComments();
               } catch (err) {
                 alert(err.message);
               }
             });
           });
           box.querySelectorAll('[data-act="ec"]').forEach(function (btn) {
-            btn.addEventListener("click", function () {
+            btn.addEventListener("click", async function () {
               var cid = btn.getAttribute("data-cid");
-              var cur = AppData.getComments(post.id).find(function (x) {
+              var cs2 = await AppData.getComments(post.id);
+              var cur = cs2.find(function (x) {
                 return x.id === cid;
               });
               if (!cur) return;
               var nv = prompt("댓글 수정", cur.body);
               if (nv == null) return;
               try {
-                AppData.updateComment(user.id, cid, nv);
-                renderComments();
+                await AppData.updateComment(user.id, cid, nv);
+                await renderComments();
               } catch (err) {
                 alert(err.message);
               }
@@ -257,15 +281,15 @@
           var t = document.getElementById("ct").value;
           if (!t.trim()) return;
           try {
-            AppData.addComment(user.id, post.id, t);
+            await AppData.addComment(user.id, post.id, t);
             document.getElementById("ct").value = "";
-            renderComments();
+            await renderComments();
           } catch (err) {
             alert(err.message);
           }
         });
 
-        renderComments();
+        await renderComments();
       });
     </script>
   </body>

@@ -2,6 +2,16 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
+    <base data-auto-base href="" />
+    <script>
+      (function (b) {
+        try {
+          b.href = new URL(".", location.href).href;
+        } catch (e) {
+          b.href = "./";
+        }
+      })(document.querySelector("base[data-auto-base]"));
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>커뮤니티 보드 · Demo Service</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
@@ -9,22 +19,23 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
     />
-    <link rel="stylesheet" href="./assets/css/styles.css" />
-    <script defer src="./assets/js/app-data.js"></script>
+    <link rel="stylesheet" href="../../assets/css/styles.css" />
+    <script src="../../assets/js/site-config.js"></script>
+    <script defer src="../../assets/js/app-data.js"></script>
   </head>
   <body>
     <header class="site-header">
       <div class="wrap inner">
-        <a class="brand" href="./index.html">
+        <a class="brand" href="../../index.html">
           <span class="brand-mark" aria-hidden="true">
-            <svg class="icon icon-lg"><use href="./assets/icons.svg#i-spark" /></svg>
+            <svg class="icon icon-lg"><use href="../../assets/icons.svg#i-spark" /></svg>
           </span>
           <span>Demo Service</span>
         </a>
         <nav class="nav" id="nav">
           <span class="muted" id="who" style="font-size: 0.9rem"></span>
           <button type="button" class="btn btn-ghost btn-sm" id="logout">
-            <svg class="icon"><use href="./assets/icons.svg#i-lock" /></svg>
+            <svg class="icon"><use href="../../assets/icons.svg#i-lock" /></svg>
             로그아웃
           </button>
         </nav>
@@ -36,13 +47,13 @@
         <div class="board-toolbar">
           <div>
             <h1 style="margin: 0 0 6px; font-size: clamp(1.35rem, 3vw, 1.75rem); letter-spacing: -0.02em">
-              <svg class="icon" style="vertical-align: -0.12em" aria-hidden="true"><use href="./assets/icons.svg#i-chat" /></svg>
+              <svg class="icon" style="vertical-align: -0.12em" aria-hidden="true"><use href="../../assets/icons.svg#i-chat" /></svg>
               커뮤니티 보드
             </h1>
             <p class="muted" style="margin: 0">게시글을 눌러 댓글까지 이어가 보세요.</p>
           </div>
           <button type="button" class="btn btn-primary" id="openNew">
-            <svg class="icon"><use href="./assets/icons.svg#i-add" /></svg>
+            <svg class="icon"><use href="../../assets/icons.svg#i-add" /></svg>
             새 글 작성
           </button>
         </div>
@@ -72,17 +83,19 @@
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        var user = AppData.requireSession();
+      document.addEventListener("DOMContentLoaded", async function () {
+        await AppData.init();
+        var ICONS = "../../assets/icons.svg";
+        var user = await AppData.requireSession();
         if (!user) {
-          window.location.href = "./login.html";
+          window.location.href = "../../auth/login/index.html";
           return;
         }
         document.getElementById("who").textContent = user.name + " · @" + user.username;
 
-        document.getElementById("logout").addEventListener("click", function () {
-          AppData.clearSession();
-          window.location.href = "./login.html";
+        document.getElementById("logout").addEventListener("click", async function () {
+          await AppData.clearSession();
+          window.location.href = "../../auth/login/index.html";
         });
 
         var modal = document.getElementById("modal");
@@ -111,32 +124,38 @@
           }
         }
 
-        function render() {
+        async function render() {
           var list = document.getElementById("list");
-          var posts = AppData.getPosts();
+          var posts = await AppData.getPosts();
           if (!posts.length) {
             list.innerHTML =
-              '<div class="empty"><svg class="icon icon-lg" style="margin: 0 auto 10px; opacity: 0.6"><use href="./assets/icons.svg#i-chat"/></svg>첫 게시글을 작성해 보세요.</div>';
+              '<div class="empty"><svg class="icon icon-lg" style="margin: 0 auto 10px; opacity: 0.6"><use href="' +
+              ICONS +
+              '#i-chat"/></svg>첫 게시글을 작성해 보세요.</div>';
             return;
           }
-          list.innerHTML = posts
-            .map(function (p) {
-              return (
-                '<article class="post-item" data-id="' +
+          var parts = [];
+          for (var i = 0; i < posts.length; i++) {
+            var p = posts[i];
+            var dn = await AppData.displayName(p.authorId);
+            parts.push(
+              '<article class="post-item" data-id="' +
                 p.id +
                 '"><div><h3>' +
                 escapeHtml(p.title) +
                 '</h3><div class="meta">' +
-                escapeHtml(AppData.displayName(p.authorId)) +
+                escapeHtml(dn) +
                 " · " +
                 fmt(p.updatedAt) +
-                "</div></div><svg class=\"icon\" aria-hidden=\"true\"><use href=\"./assets/icons.svg#i-arrow\"/></svg></article>"
-              );
-            })
-            .join("");
+                '</div></div><svg class="icon" aria-hidden="true"><use href="' +
+                ICONS +
+                '#i-arrow"/></svg></article>'
+            );
+          }
+          list.innerHTML = parts.join("");
           list.querySelectorAll(".post-item").forEach(function (el) {
             el.addEventListener("click", function () {
-              window.location.href = "./post.html?id=" + encodeURIComponent(el.getAttribute("data-id"));
+              window.location.href = "../post/index.html?id=" + encodeURIComponent(el.getAttribute("data-id"));
             });
           });
         }
@@ -149,23 +168,23 @@
             .replace(/"/g, "&quot;");
         }
 
-        document.getElementById("mf").addEventListener("submit", function (e) {
+        document.getElementById("mf").addEventListener("submit", async function (e) {
           e.preventDefault();
           mmsg.className = "msg";
           try {
             var title = document.getElementById("mt").value;
             var body = document.getElementById("mb").value;
             if (!title.trim() || !body.trim()) throw new Error("제목과 내용을 입력해 주세요.");
-            var r = AppData.upsertPost(user.id, { title: title, body: body });
+            var r = await AppData.upsertPost(user.id, { title: title, body: body });
             closeM();
-            window.location.href = "./post.html?id=" + encodeURIComponent(r.id);
+            window.location.href = "../post/index.html?id=" + encodeURIComponent(r.id);
           } catch (err) {
             mmsg.textContent = err.message || "저장에 실패했습니다.";
             mmsg.className = "msg show err";
           }
         });
 
-        render();
+        await render();
       });
     </script>
   </body>
