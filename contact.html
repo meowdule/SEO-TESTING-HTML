@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>문의하기 · Demo Service</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <link rel="stylesheet" href="./assets/css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap inner">
+        <a class="brand" href="./index.html">
+          <span class="brand-mark" aria-hidden="true">
+            <svg class="icon icon-lg"><use href="./assets/icons.svg#i-spark" /></svg>
+          </span>
+          <span>Demo Service</span>
+        </a>
+        <nav class="nav">
+          <a class="btn btn-ghost btn-sm" href="./index.html">
+            <svg class="icon"><use href="./assets/icons.svg#i-home" /></svg>
+            홈
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="auth-shell">
+      <div class="auth-card">
+        <h1>
+          <svg class="icon" aria-hidden="true"><use href="./assets/icons.svg#i-mail" /></svg>
+          문의하기
+        </h1>
+        <p class="hint">문의 내용은 이 브라우저의 localStorage에만 기록됩니다.</p>
+        <div id="msg" class="msg" role="status"></div>
+        <form id="f">
+          <div class="field">
+            <label for="name">이름</label>
+            <input class="input" id="name" name="name" required autocomplete="name" />
+          </div>
+          <div class="field">
+            <label for="email">이메일</label>
+            <input class="input" id="email" name="email" type="email" required autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="topic">주제</label>
+            <select class="input" id="topic" name="topic">
+              <option>제품 문의</option>
+              <option>가격 / 견적</option>
+              <option>기술 지원</option>
+              <option>기타</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="body">내용</label>
+            <textarea class="textarea" id="body" name="body" required></textarea>
+          </div>
+          <div class="stack">
+            <button class="btn btn-primary" type="submit">
+              <svg class="icon"><use href="./assets/icons.svg#i-send" /></svg>
+              제출하기
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        var KEY = "demo_contact_submissions_v1";
+        var msg = document.getElementById("msg");
+        function show(text, ok) {
+          msg.textContent = text;
+          msg.className = "msg show " + (ok ? "ok" : "err");
+        }
+        document.getElementById("f").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var row = {
+            at: Date.now(),
+            name: document.getElementById("name").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            topic: document.getElementById("topic").value,
+            body: document.getElementById("body").value.trim(),
+          };
+          var list = [];
+          try {
+            list = JSON.parse(localStorage.getItem(KEY) || "[]");
+          } catch (x) {}
+          list.push(row);
+          localStorage.setItem(KEY, JSON.stringify(list));
+          show("문의가 저장되었습니다. (이 PC 브라우저에만 보관)", true);
+          e.target.reset();
+        });
+      })();
+    </script>
+  </body>
+</html>

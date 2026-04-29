@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>커뮤니티 보드 · Demo Service</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <link rel="stylesheet" href="./assets/css/styles.css" />
+    <script defer src="./assets/js/app-data.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap inner">
+        <a class="brand" href="./index.html">
+          <span class="brand-mark" aria-hidden="true">
+            <svg class="icon icon-lg"><use href="./assets/icons.svg#i-spark" /></svg>
+          </span>
+          <span>Demo Service</span>
+        </a>
+        <nav class="nav" id="nav">
+          <span class="muted" id="who" style="font-size: 0.9rem"></span>
+          <button type="button" class="btn btn-ghost btn-sm" id="logout">
+            <svg class="icon"><use href="./assets/icons.svg#i-lock" /></svg>
+            로그아웃
+          </button>
+        </nav>
+      </div>
+    </header>
+
+    <main class="section">
+      <div class="wrap">
+        <div class="board-toolbar">
+          <div>
+            <h1 style="margin: 0 0 6px; font-size: clamp(1.35rem, 3vw, 1.75rem); letter-spacing: -0.02em">
+              <svg class="icon" style="vertical-align: -0.12em" aria-hidden="true"><use href="./assets/icons.svg#i-chat" /></svg>
+              커뮤니티 보드
+            </h1>
+            <p class="muted" style="margin: 0">게시글을 눌러 댓글까지 이어가 보세요.</p>
+          </div>
+          <button type="button" class="btn btn-primary" id="openNew">
+            <svg class="icon"><use href="./assets/icons.svg#i-add" /></svg>
+            새 글 작성
+          </button>
+        </div>
+        <div id="list" class="post-list"></div>
+      </div>
+    </main>
+
+    <div class="modal-backdrop" id="modal" role="dialog" aria-modal="true" aria-labelledby="mtitle">
+      <div class="modal">
+        <h2 id="mtitle">새 게시글</h2>
+        <div id="mmsg" class="msg" role="alert"></div>
+        <form id="mf">
+          <div class="field">
+            <label for="mt">제목</label>
+            <input class="input" id="mt" required />
+          </div>
+          <div class="field">
+            <label for="mb">내용</label>
+            <textarea class="textarea" id="mb" required></textarea>
+          </div>
+          <div class="row-between" style="margin-top: 4px">
+            <button type="button" class="btn btn-ghost btn-sm" id="mclose">취소</button>
+            <button type="submit" class="btn btn-primary btn-sm">등록</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        var user = AppData.requireSession();
+        if (!user) {
+          window.location.href = "./login.html";
+          return;
+        }
+        document.getElementById("who").textContent = user.name + " · @" + user.username;
+
+        document.getElementById("logout").addEventListener("click", function () {
+          AppData.clearSession();
+          window.location.href = "./login.html";
+        });
+
+        var modal = document.getElementById("modal");
+        var mmsg = document.getElementById("mmsg");
+
+        function openM() {
+          mmsg.className = "msg";
+          document.getElementById("mf").reset();
+          modal.classList.add("show");
+          document.getElementById("mt").focus();
+        }
+        function closeM() {
+          modal.classList.remove("show");
+        }
+        document.getElementById("openNew").addEventListener("click", openM);
+        document.getElementById("mclose").addEventListener("click", closeM);
+        modal.addEventListener("click", function (e) {
+          if (e.target === modal) closeM();
+        });
+
+        function fmt(ts) {
+          try {
+            return new Date(ts).toLocaleString("ko-KR");
+          } catch (x) {
+            return "";
+          }
+        }
+
+        function render() {
+          var list = document.getElementById("list");
+          var posts = AppData.getPosts();
+          if (!posts.length) {
+            list.innerHTML =
+              '<div class="empty"><svg class="icon icon-lg" style="margin: 0 auto 10px; opacity: 0.6"><use href="./assets/icons.svg#i-chat"/></svg>첫 게시글을 작성해 보세요.</div>';
+            return;
+          }
+          list.innerHTML = posts
+            .map(function (p) {
+              return (
+                '<article class="post-item" data-id="' +
+                p.id +
+                '"><div><h3>' +
+                escapeHtml(p.title) +
+                '</h3><div class="meta">' +
+                escapeHtml(AppData.displayName(p.authorId)) +
+                " · " +
+                fmt(p.updatedAt) +
+                "</div></div><svg class=\"icon\" aria-hidden=\"true\"><use href=\"./assets/icons.svg#i-arrow\"/></svg></article>"
+              );
+            })
+            .join("");
+          list.querySelectorAll(".post-item").forEach(function (el) {
+            el.addEventListener("click", function () {
+              window.location.href = "./post.html?id=" + encodeURIComponent(el.getAttribute("data-id"));
+            });
+          });
+        }
+
+        function escapeHtml(s) {
+          return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        document.getElementById("mf").addEventListener("submit", function (e) {
+          e.preventDefault();
+          mmsg.className = "msg";
+          try {
+            var title = document.getElementById("mt").value;
+            var body = document.getElementById("mb").value;
+            if (!title.trim() || !body.trim()) throw new Error("제목과 내용을 입력해 주세요.");
+            var r = AppData.upsertPost(user.id, { title: title, body: body });
+            closeM();
+            window.location.href = "./post.html?id=" + encodeURIComponent(r.id);
+          } catch (err) {
+            mmsg.textContent = err.message || "저장에 실패했습니다.";
+            mmsg.className = "msg show err";
+          }
+        });
+
+        render();
+      });
+    </script>
+  </body>
+</html>

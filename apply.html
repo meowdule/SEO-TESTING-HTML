@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>지금 신청하기 · Demo Service</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <link rel="stylesheet" href="./assets/css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap inner">
+        <a class="brand" href="./index.html">
+          <span class="brand-mark" aria-hidden="true">
+            <svg class="icon icon-lg"><use href="./assets/icons.svg#i-spark" /></svg>
+          </span>
+          <span>Demo Service</span>
+        </a>
+        <nav class="nav">
+          <a class="btn btn-ghost btn-sm" href="./index.html">
+            <svg class="icon"><use href="./assets/icons.svg#i-home" /></svg>
+            홈
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="auth-shell">
+      <div class="auth-card">
+        <h1>
+          <svg class="icon" aria-hidden="true"><use href="./assets/icons.svg#i-user-plus" /></svg>
+          지금 신청하기
+        </h1>
+        <p class="hint">신청서는 데모용으로 브라우저에만 저장됩니다.</p>
+        <div id="msg" class="msg" role="status"></div>
+        <form id="f">
+          <div class="field">
+            <label for="company">회사 / 팀</label>
+            <input class="input" id="company" required />
+          </div>
+          <div class="field">
+            <label for="name">담당자 이름</label>
+            <input class="input" id="name" required autocomplete="name" />
+          </div>
+          <div class="field">
+            <label for="email">이메일</label>
+            <input class="input" id="email" type="email" required autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="plan">희망 플랜</label>
+            <select class="input" id="plan">
+              <option>Starter</option>
+              <option>Pro</option>
+              <option>Team</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="note">추가 메모</label>
+            <textarea class="textarea" id="note"></textarea>
+          </div>
+          <button class="btn btn-primary" type="submit">
+            <svg class="icon"><use href="./assets/icons.svg#i-send" /></svg>
+            신청 제출
+          </button>
+        </form>
+      </div>
+    </main>
+
+    <script>
+      (function () {
+        var KEY = "demo_apply_submissions_v1";
+        var msg = document.getElementById("msg");
+        document.getElementById("f").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var row = {
+            at: Date.now(),
+            company: document.getElementById("company").value.trim(),
+            name: document.getElementById("name").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            plan: document.getElementById("plan").value,
+            note: document.getElementById("note").value.trim(),
+          };
+          var list = [];
+          try {
+            list = JSON.parse(localStorage.getItem(KEY) || "[]");
+          } catch (x) {}
+          list.push(row);
+          localStorage.setItem(KEY, JSON.stringify(list));
+          msg.className = "msg show ok";
+          msg.textContent = "신청이 저장되었습니다.";
+          e.target.reset();
+        });
+      })();
+    </script>
+  </body>
+</html>

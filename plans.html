@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>구매 플랜 조회 · Demo Service</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+    <link rel="stylesheet" href="./assets/css/styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap inner">
+        <a class="brand" href="./index.html">
+          <span class="brand-mark" aria-hidden="true">
+            <svg class="icon icon-lg"><use href="./assets/icons.svg#i-spark" /></svg>
+          </span>
+          <span>Demo Service</span>
+        </a>
+        <nav class="nav">
+          <a class="btn btn-ghost btn-sm" href="./index.html">
+            <svg class="icon"><use href="./assets/icons.svg#i-home" /></svg>
+            홈
+          </a>
+          <a class="btn btn-primary btn-sm" href="./apply.html">신청하기</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="section">
+      <div class="wrap">
+        <h1 style="margin: 0 0 8px; font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -0.02em">
+          <svg class="icon" style="vertical-align: -0.15em" aria-hidden="true">
+            <use href="./assets/icons.svg#i-card" />
+          </svg>
+          구매 플랜 조회
+        </h1>
+        <p class="sub">데모용 가격표입니다. 실제 과금과 무관합니다.</p>
+
+        <div class="tile-grid" style="align-items: stretch">
+          <article class="tile" style="display: flex; flex-direction: column">
+            <div class="pill" style="align-self: flex-start">Starter</div>
+            <h3 style="margin: 14px 0 8px; font-size: 1.35rem">₩0 / 월</h3>
+            <p class="muted" style="margin: 0 0 16px; flex: 1">개인 실험, 포트폴리오에 적합합니다.</p>
+            <ul class="feature-list" style="margin: 0">
+              <li>
+                <span class="tick" aria-hidden="true">
+                  <svg class="icon" width="16" height="16"><use href="./assets/icons.svg#i-check" /></svg>
+                </span>
+                <span>체험 보드 포함</span>
+              </li>
+              <li>
+                <span class="tick" aria-hidden="true">
+                  <svg class="icon" width="16" height="16"><use href="./assets/icons.svg#i-check" /></svg>
+                </span>
+                <span>브라우저 로컬 저장</span>
+              </li>
+            </ul>
+            <a class="btn btn-sm" style="margin-top: 18px" href="./login.html">체험하기</a>
+          </article>
+
+          <article
+            class="tile"
+            style="
+              display: flex;
+              flex-direction: column;
+              border-color: rgba(124, 92, 255, 0.55);
+              box-shadow: 0 18px 60px rgba(124, 92, 255, 0.18);
+            "
+          >
+            <div class="pill" style="align-self: flex-start; background: rgba(34, 211, 238, 0.12); border-color: rgba(34, 211, 238, 0.35); color: #a5f3fc">Pro · 인기</div>
+            <h3 style="margin: 14px 0 8px; font-size: 1.35rem">₩29,000 / 월</h3>
+            <p class="muted" style="margin: 0 0 16px; flex: 1">소규모 팀이 프로토타입을 공유할 때.</p>
+            <ul class="feature-list" style="margin: 0">
+              <li>
+                <span class="tick" aria-hidden="true">
+                  <svg class="icon" width="16" height="16"><use href="./assets/icons.svg#i-check" /></svg>
+                </span>
+                <span>우선 지원 (데모)</span>
+              </li>
+              <li>
+                <span class="tick" aria-hidden="true">
+                  <svg class="icon" width="16" height="16"><use href="./assets/icons.svg#i-check" /></svg>
+                </span>
+                <span>추가 테마 예정</span>
+              </li>
+            </ul>
+            <a class="btn btn-primary btn-sm" style="margin-top: 18px" href="./apply.html">이 플랜으로 신청</a>
+          </article>
+
+          <article class="tile" style="display: flex; flex-direction: column">
+            <div class="pill" style="align-self: flex-start">Team</div>
+            <h3 style="margin: 14px 0 8px; font-size: 1.35rem">문의</h3>
+            <p class="muted" style="margin: 0 0 16px; flex: 1">조직 단위 도입, 보안 검토가 필요한 경우.</p>
+            <ul class="feature-list" style="margin: 0">
+              <li>
+                <span class="tick" aria-hidden="true">
+                  <svg class="icon" width="16" height="16"><use href="./assets/icons.svg#i-check" /></svg>
+                </span>
+                <span>전담 매니저 (데모)</span>
+              </li>
+              <li>
+                <span class="tick" aria-hidden="true">
+                  <svg class="icon" width="16" height="16"><use href="./assets/icons.svg#i-check" /></svg>
+                </span>
+                <span>맞춤 온보딩</span>
+              </li>
+            </ul>
+            <a class="btn btn-sm" style="margin-top: 18px" href="./contact.html">문의하기</a>
+          </article>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">가격은 예시이며 실제 서비스와 다를 수 있습니다.</div>
+    </footer>
+  </body>
+</html>
