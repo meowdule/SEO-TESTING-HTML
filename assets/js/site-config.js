@@ -16,5 +16,5 @@
 window.SITE = {
   supabaseUrl: "https://qyxqeaxasxamgjbbwqqo.supabase.co",
   supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5eHFlYXhhc3hhbWdqYmJ3cXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjM0MTcsImV4cCI6MjA5MzAzOTQxN30.tREGhT2Rgmr6PkxwDFGAfb8Ue_jGaAEL9ATlwVTkL6M",
-  adminUsernames: [ys.kim],
+  adminUsernames: ["ys.kim"],
 };
