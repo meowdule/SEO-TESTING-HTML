@@ -48,7 +48,7 @@
           로컬 모드: 이메일·아이디가 일치하면 이 브라우저에서 바로 새 비밀번호로 갱신됩니다. Supabase 연결 시: 이메일로 재설정 링크가 발송됩니다.
         </p>
         <div id="msg" class="msg" role="alert"></div>
-        <form id="f">
+        <form id="f" method="post" action="#">
           <div class="field">
             <label for="email">이메일</label>
             <input class="input" id="email" type="email" required autocomplete="email" />
@@ -74,7 +74,11 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", async function () {
-        await AppData.init();
+        try {
+          await AppData.init();
+        } catch (err) {
+          console.error(err);
+        }
         if (AppData.isRemote()) {
           document.getElementById("fp-local-user").style.display = "none";
           document.getElementById("fp-local-pw").style.display = "none";

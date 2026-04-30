@@ -47,7 +47,7 @@
         </h1>
         <p class="hint">문의 내용은 이 브라우저의 localStorage에만 기록됩니다.</p>
         <div id="msg" class="msg" role="status"></div>
-        <form id="f">
+        <form id="f" method="post" action="#">
           <div class="field">
             <label for="name">이름</label>
             <input class="input" id="name" name="name" required autocomplete="name" />
@@ -81,6 +81,7 @@
 
     <script>
       (function () {
+        /* assets/js/app-data.js 의 CONTACT_INQUIRIES_KEY 와 동일해야 함 */
         var KEY = "demo_contact_submissions_v1";
         var msg = document.getElementById("msg");
         function show(text, ok) {

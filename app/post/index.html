@@ -61,7 +61,7 @@
             댓글
           </h2>
           <div id="clist"></div>
-          <form id="cf" style="margin-top: 14px">
+          <form id="cf" method="post" action="#" style="margin-top: 14px">
             <div class="field" style="margin-bottom: 10px">
               <label for="ct" class="sr-only">댓글 입력</label>
               <textarea class="textarea" id="ct" placeholder="댓글을 입력하세요" style="min-height: 88px"></textarea>
@@ -79,7 +79,7 @@
       <div class="modal">
         <h2 id="etitle">글 수정</h2>
         <div id="emsg" class="msg" role="alert"></div>
-        <form id="ef">
+        <form id="ef" method="post" action="#">
           <div class="field">
             <label for="et">제목</label>
             <input class="input" id="et" required />
@@ -98,7 +98,11 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", async function () {
-        await AppData.init();
+        try {
+          await AppData.init();
+        } catch (err) {
+          console.error(err);
+        }
         var ICONS = "../../assets/icons.svg";
         var user = await AppData.requireSession();
         if (!user) {

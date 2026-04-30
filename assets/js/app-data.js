@@ -8,6 +8,9 @@
     session: "demo_app_session_v1",
   };
 
+  /** 문의하기 폼과 동일 키 (pages/contact/index.html) */
+  var CONTACT_INQUIRIES_KEY = "demo_contact_submissions_v1";
+
   var impl = "local";
   var sb = null;
   var initPromise = null;
@@ -582,6 +585,31 @@
     },
     resetPassword: function (email, username, newPassword) {
       return impl === "remote" ? resetPasswordRemote(email, username, newPassword) : resetPasswordLocal(email, username, newPassword);
+    },
+
+    CONTACT_INQUIRIES_KEY: CONTACT_INQUIRIES_KEY,
+
+    isAdminUser: function (username) {
+      var raw = global.SITE && global.SITE.adminUsernames;
+      var list = Array.isArray(raw) ? raw : typeof raw === "string" && String(raw).trim() ? [raw] : [];
+      var u = String(username || "").trim().toLowerCase();
+      return list.some(function (a) {
+        return String(a).trim().toLowerCase() === u;
+      });
+    },
+
+    getContactInquiries: function () {
+      try {
+        var raw = localStorage.getItem(CONTACT_INQUIRIES_KEY);
+        var arr = raw ? JSON.parse(raw) : [];
+        if (!Array.isArray(arr)) arr = [];
+        arr = arr.slice().sort(function (a, b) {
+          return (b.at || 0) - (a.at || 0);
+        });
+        return P(arr);
+      } catch (e) {
+        return P([]);
+      }
     },
   };
 })(window);

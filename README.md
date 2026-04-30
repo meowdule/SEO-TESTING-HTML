@@ -55,3 +55,14 @@ window.SITE = {
 - 아이디 찾기: `find_username_by_email` RPC.
 - 비밀번호 찾기: 메일 연동 시에만 의미 있음(테스트 생략 가능).
 - 게시글·댓글: `posts`, `comments` + RLS로 **본인 글·댓글만 수정·삭제**.
+
+### 문의 기록 탭 (관리자)
+
+- 문의하기(`pages/contact/`) 제출 내용은 **`localStorage`** 키 `demo_contact_submissions_v1`에만 쌓입니다.
+- 보드에서 **「문의 기록」** 탭은 `site-config.js`의 **`adminUsernames`** 배열에 있는 **로그인 아이디(username)** 와 일치할 때만 보입니다. (대소문자 무시)
+
+```javascript
+adminUsernames: ["내관리자아이디"],
+```
+
+클라이언트만으로 막는 수준이므로 실서비스용 관리자 권한으로는 부적합합니다.

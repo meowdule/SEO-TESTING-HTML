@@ -589,3 +589,75 @@ select:focus {
   clip: rect(0, 0, 0, 0);
   border: 0;
 }
+
+/* Board tabs + 문의 기록 */
+.board-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: var(--card);
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.tab-btn:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  color: var(--text);
+}
+
+.tab-btn.tab-btn-active {
+  border-color: rgba(124, 92, 255, 0.55);
+  color: #e0e7ff;
+  background: rgba(124, 92, 255, 0.18);
+}
+
+.inquiry-list {
+  display: grid;
+  gap: 12px;
+}
+
+.inquiry-card {
+  padding: 18px 20px;
+  border-radius: var(--radius);
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  text-align: left;
+}
+
+.inquiry-card .inq-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: baseline;
+  margin-bottom: 10px;
+  font-size: 0.88rem;
+  color: var(--muted);
+}
+
+.inquiry-card .inq-topic {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(124, 92, 255, 0.2);
+  color: #ddd6fe;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.inquiry-card .inq-body {
+  white-space: pre-wrap;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}

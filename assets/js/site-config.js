@@ -9,8 +9,12 @@
  * 비밀번호를 잊었으면 Supabase 대시보드 Authentication → Users에서 해당 사용자 비밀번호를 바꾸거나, 새로 가입하세요.
  *
  * 아래 둘 다 비우면 → 이 브라우저 localStorage만 사용 (로컬 모드).
+ *
+ * adminUsernames: 보드에서「문의 기록」탭을 볼 수 있는 로그인 아이디(username) 목록.
+ * (클라이언트 전용이라 실서비스 수준 보안은 아님 — 데모용)
  */
 window.SITE = {
   supabaseUrl: "https://qyxqeaxasxamgjbbwqqo.supabase.co",
   supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5eHFlYXhhc3hhbWdqYmJ3cXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0NjM0MTcsImV4cCI6MjA5MzAzOTQxN30.tREGhT2Rgmr6PkxwDFGAfb8Ue_jGaAEL9ATlwVTkL6M",
+  adminUsernames: [ys.kim],
 };

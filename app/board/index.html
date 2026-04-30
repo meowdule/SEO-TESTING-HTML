@@ -44,20 +44,45 @@
 
     <main class="section">
       <div class="wrap">
-        <div class="board-toolbar">
-          <div>
-            <h1 style="margin: 0 0 6px; font-size: clamp(1.35rem, 3vw, 1.75rem); letter-spacing: -0.02em">
-              <svg class="icon" style="vertical-align: -0.12em" aria-hidden="true"><use href="../../assets/icons.svg#i-chat" /></svg>
-              커뮤니티 보드
-            </h1>
-            <p class="muted" style="margin: 0">게시글을 눌러 댓글까지 이어가 보세요.</p>
-          </div>
-          <button type="button" class="btn btn-primary" id="openNew">
-            <svg class="icon"><use href="../../assets/icons.svg#i-add" /></svg>
-            새 글 작성
+        <div class="board-tabs" id="boardTabs" role="tablist" aria-label="보드 구역" style="display: none">
+          <button type="button" class="tab-btn tab-btn-active" id="tabPosts" role="tab" aria-selected="true">
+            <svg class="icon" aria-hidden="true"><use href="../../assets/icons.svg#i-chat" /></svg>
+            게시판
+          </button>
+          <button type="button" class="tab-btn" id="tabInquiries" role="tab" aria-selected="false">
+            <svg class="icon" aria-hidden="true"><use href="../../assets/icons.svg#i-mail" /></svg>
+            문의 기록
           </button>
         </div>
-        <div id="list" class="post-list"></div>
+
+        <div id="panel-posts">
+          <div class="board-toolbar">
+            <div>
+              <h1 style="margin: 0 0 6px; font-size: clamp(1.35rem, 3vw, 1.75rem); letter-spacing: -0.02em">
+                <svg class="icon" style="vertical-align: -0.12em" aria-hidden="true"><use href="../../assets/icons.svg#i-chat" /></svg>
+                커뮤니티 보드
+              </h1>
+              <p class="muted" style="margin: 0">게시글을 눌러 댓글까지 이어가 보세요.</p>
+            </div>
+            <button type="button" class="btn btn-primary" id="openNew">
+              <svg class="icon"><use href="../../assets/icons.svg#i-add" /></svg>
+              새 글 작성
+            </button>
+          </div>
+          <div id="list" class="post-list"></div>
+        </div>
+
+        <div id="panel-inquiries" style="display: none">
+          <h2 style="margin: 0 0 8px; font-size: 1.2rem; letter-spacing: -0.02em">
+            <svg class="icon" style="vertical-align: -0.12em" aria-hidden="true"><use href="../../assets/icons.svg#i-mail" /></svg>
+            문의 기록
+          </h2>
+          <p class="muted" style="margin: 0 0 16px">
+            문의하기 페이지에서 제출된 항목입니다. 이 PC 브라우저 <code style="color: #cbd5e1">localStorage</code>에만 저장되므로, 다른 기기나
+            시크릿 창에서는 목록이 비어 있을 수 있습니다.
+          </p>
+          <div id="inquiryList" class="inquiry-list"></div>
+        </div>
       </div>
     </main>
 
@@ -65,7 +90,7 @@
       <div class="modal">
         <h2 id="mtitle">새 게시글</h2>
         <div id="mmsg" class="msg" role="alert"></div>
-        <form id="mf">
+        <form id="mf" method="post" action="#">
           <div class="field">
             <label for="mt">제목</label>
             <input class="input" id="mt" required />
@@ -84,7 +109,11 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", async function () {
-        await AppData.init();
+        try {
+          await AppData.init();
+        } catch (err) {
+          console.error(err);
+        }
         var ICONS = "../../assets/icons.svg";
         var user = await AppData.requireSession();
         if (!user) {
@@ -92,6 +121,37 @@
           return;
         }
         document.getElementById("who").textContent = user.name + " · @" + user.username;
+
+        var isAdmin = AppData.isAdminUser(user.username);
+        var boardTabs = document.getElementById("boardTabs");
+        var tabPosts = document.getElementById("tabPosts");
+        var tabInquiries = document.getElementById("tabInquiries");
+        var panelPosts = document.getElementById("panel-posts");
+        var panelInquiries = document.getElementById("panel-inquiries");
+
+        if (isAdmin) {
+          boardTabs.style.display = "flex";
+        }
+
+        function showTab(which) {
+          var posts = which === "posts";
+          tabPosts.classList.toggle("tab-btn-active", posts);
+          tabInquiries.classList.toggle("tab-btn-active", !posts);
+          tabPosts.setAttribute("aria-selected", posts ? "true" : "false");
+          tabInquiries.setAttribute("aria-selected", posts ? "false" : "true");
+          panelPosts.style.display = posts ? "block" : "none";
+          panelInquiries.style.display = posts ? "none" : "block";
+          if (!posts) renderInquiries();
+        }
+
+        if (isAdmin) {
+          tabPosts.addEventListener("click", function () {
+            showTab("posts");
+          });
+          tabInquiries.addEventListener("click", function () {
+            showTab("inquiries");
+          });
+        }
 
         document.getElementById("logout").addEventListener("click", async function () {
           await AppData.clearSession();
@@ -124,6 +184,41 @@
           }
         }
 
+        function escapeHtml(s) {
+          return String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        async function renderInquiries() {
+          var box = document.getElementById("inquiryList");
+          var rows = await AppData.getContactInquiries();
+          if (!rows.length) {
+            box.innerHTML = '<div class="empty">저장된 문의가 없습니다.</div>';
+            return;
+          }
+          var html = [];
+          for (var i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            html.push(
+              '<article class="inquiry-card"><div class="inq-head"><span>' +
+                escapeHtml(fmt(r.at)) +
+                '</span><span>' +
+                escapeHtml(r.name || "") +
+                " · " +
+                escapeHtml(r.email || "") +
+                '</span><span class="inq-topic">' +
+                escapeHtml(r.topic || "") +
+                '</span></div><div class="inq-body">' +
+                escapeHtml(r.body || "") +
+                "</div></article>"
+            );
+          }
+          box.innerHTML = html.join("");
+        }
+
         async function render() {
           var list = document.getElementById("list");
           var posts = await AppData.getPosts();
@@ -135,8 +230,8 @@
             return;
           }
           var parts = [];
-          for (var i = 0; i < posts.length; i++) {
-            var p = posts[i];
+          for (var j = 0; j < posts.length; j++) {
+            var p = posts[j];
             var dn = await AppData.displayName(p.authorId);
             parts.push(
               '<article class="post-item" data-id="' +
@@ -158,14 +253,6 @@
               window.location.href = "../post/index.html?id=" + encodeURIComponent(el.getAttribute("data-id"));
             });
           });
-        }
-
-        function escapeHtml(s) {
-          return String(s)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;");
         }
 
         document.getElementById("mf").addEventListener("submit", async function (e) {

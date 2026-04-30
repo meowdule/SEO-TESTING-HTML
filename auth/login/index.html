@@ -49,14 +49,14 @@
         </h1>
         <p class="hint">체험 계정으로 로그인하면 커뮤니티 보드로 이동합니다.</p>
         <div id="msg" class="msg" role="alert"></div>
-        <form id="loginForm">
+        <form id="loginForm" method="post" action="#">
           <div class="field">
             <label for="login">아이디 또는 이메일</label>
-            <input class="input" id="login" name="login" autocomplete="username" required />
+            <input class="input" id="login" autocomplete="username" required />
           </div>
           <div class="field">
             <label for="password">비밀번호</label>
-            <input class="input" id="password" name="password" type="password" autocomplete="current-password" required />
+            <input class="input" id="password" type="password" autocomplete="current-password" required />
           </div>
           <div class="stack">
             <button class="btn btn-primary" type="submit">
@@ -86,7 +86,14 @@
 
     <script>
       document.addEventListener("DOMContentLoaded", async function () {
-        await AppData.init();
+        if (location.search) {
+          history.replaceState(null, "", location.pathname + location.hash);
+        }
+        try {
+          await AppData.init();
+        } catch (err) {
+          console.error(err);
+        }
         if (window.AppData && (await AppData.getSession())) {
           window.location.href = "../../app/board/index.html";
           return;
