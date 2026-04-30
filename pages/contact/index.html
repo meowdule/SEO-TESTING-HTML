@@ -20,6 +20,8 @@
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
     />
     <link rel="stylesheet" href="../../assets/css/styles.css" />
+    <script src="../../assets/js/site-config.js"></script>
+    <script defer src="../../assets/js/app-data.js"></script>
   </head>
   <body>
     <header class="site-header">
@@ -45,7 +47,7 @@
           <svg class="icon" aria-hidden="true"><use href="../../assets/icons.svg#i-mail" /></svg>
           문의하기
         </h1>
-        <p class="hint">문의 내용은 이 브라우저의 localStorage에만 기록됩니다.</p>
+        <p class="hint" id="hintContact">문의 내용은 이 브라우저의 localStorage에만 기록됩니다.</p>
         <div id="msg" class="msg" role="status"></div>
         <form id="f" method="post" action="#">
           <div class="field">
@@ -80,33 +82,38 @@
     </main>
 
     <script>
-      (function () {
-        /* assets/js/app-data.js 의 CONTACT_INQUIRIES_KEY 와 동일해야 함 */
-        var KEY = "demo_contact_submissions_v1";
-        var msg = document.getElementById("msg");
-        function show(text, ok) {
-          msg.textContent = text;
-          msg.className = "msg show " + (ok ? "ok" : "err");
+      document.addEventListener("DOMContentLoaded", async function () {
+        try {
+          await AppData.init();
+        } catch (e) {
+          console.error(e);
         }
-        document.getElementById("f").addEventListener("submit", function (e) {
+        var hint = document.getElementById("hintContact");
+        if (AppData.isRemote()) {
+          hint.textContent = "Supabase에 연결된 경우 문의는 서버에 저장되며, 관리자가 커뮤니티 보드에서 확인할 수 있습니다.";
+        }
+        var msg = document.getElementById("msg");
+        document.getElementById("f").addEventListener("submit", async function (e) {
           e.preventDefault();
-          var row = {
-            at: Date.now(),
-            name: document.getElementById("name").value.trim(),
-            email: document.getElementById("email").value.trim(),
-            topic: document.getElementById("topic").value,
-            body: document.getElementById("body").value.trim(),
-          };
-          var list = [];
+          msg.className = "msg";
           try {
-            list = JSON.parse(localStorage.getItem(KEY) || "[]");
-          } catch (x) {}
-          list.push(row);
-          localStorage.setItem(KEY, JSON.stringify(list));
-          show("문의가 저장되었습니다. (이 PC 브라우저에만 보관)", true);
-          e.target.reset();
+            await AppData.submitContactInquiry({
+              name: document.getElementById("name").value,
+              email: document.getElementById("email").value,
+              topic: document.getElementById("topic").value,
+              body: document.getElementById("body").value,
+            });
+            msg.textContent = AppData.isRemote()
+              ? "문의가 접수되었습니다."
+              : "문의가 저장되었습니다. (이 PC 브라우저에만 보관)";
+            msg.className = "msg show ok";
+            e.target.reset();
+          } catch (err) {
+            msg.textContent = err.message || "제출에 실패했습니다.";
+            msg.className = "msg show err";
+          }
         });
-      })();
+      });
     </script>
   </body>
 </html>

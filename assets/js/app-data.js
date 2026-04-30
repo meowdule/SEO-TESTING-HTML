@@ -10,6 +10,8 @@
 
   /** 문의하기 폼과 동일 키 (pages/contact/index.html) */
   var CONTACT_INQUIRIES_KEY = "demo_contact_submissions_v1";
+  /** 신청 폼과 동일 키 (pages/apply/index.html) */
+  var APPLY_LOCAL_KEY = "demo_apply_submissions_v1";
 
   var impl = "local";
   var sb = null;
@@ -387,13 +389,107 @@
     clearSessionLocal();
   }
 
+  function readLocalContactList() {
+    try {
+      var raw = localStorage.getItem(CONTACT_INQUIRIES_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function pushLocalContact(row) {
+    var arr = readLocalContactList();
+    arr.push(row);
+    localStorage.setItem(CONTACT_INQUIRIES_KEY, JSON.stringify(arr));
+  }
+
+  async function getContactInquiriesRemote() {
+    await sb.auth.getSession();
+    var r = await sb.from("contact_inquiries").select("*").order("created_at", { ascending: false });
+    if (r.error) throw new Error(r.error.message);
+    return (r.data || []).map(function (row) {
+      return {
+        id: row.id,
+        at: new Date(row.created_at).getTime(),
+        name: row.name,
+        email: row.email,
+        topic: row.topic,
+        body: row.body,
+      };
+    });
+  }
+
+  async function getApplySubmissionsRemote() {
+    await sb.auth.getSession();
+    var r = await sb.from("apply_submissions").select("*").order("created_at", { ascending: false });
+    if (r.error) throw new Error(r.error.message);
+    return (r.data || []).map(function (row) {
+      return {
+        id: row.id,
+        at: new Date(row.created_at).getTime(),
+        company: row.company,
+        name: row.contact_name,
+        email: row.email,
+        plan: row.plan,
+        note: row.note || "",
+      };
+    });
+  }
+
+  async function submitContactInquiry(payload) {
+    var name = (payload.name || "").trim();
+    var email = (payload.email || "").trim();
+    var topic = (payload.topic || "").trim();
+    var body = (payload.body || "").trim();
+    if (!name || !email || !topic || !body) throw new Error("필수 항목을 모두 입력해 주세요.");
+    if (!siteConfigured() || impl !== "remote" || !sb) {
+      pushLocalContact({ at: Date.now(), name: name, email: email, topic: topic, body: body });
+      return P();
+    }
+    var ins = await sb.from("contact_inquiries").insert({ name: name, email: email, topic: topic, body: body });
+    if (ins.error) throw new Error(ins.error.message);
+    return P();
+  }
+
+  async function submitApplySubmission(payload) {
+    var company = (payload.company || "").trim();
+    var name = (payload.name || "").trim();
+    var email = (payload.email || "").trim();
+    var plan = (payload.plan || "").trim();
+    var note = (payload.note || "").trim();
+    if (!company || !name || !email || !plan) throw new Error("필수 항목을 입력해 주세요.");
+    if (!siteConfigured() || impl !== "remote" || !sb) {
+      var list = [];
+      try {
+        list = JSON.parse(localStorage.getItem(APPLY_LOCAL_KEY) || "[]");
+      } catch (x) {}
+      if (!Array.isArray(list)) list = [];
+      list.push({ at: Date.now(), company: company, name: name, email: email, plan: plan, note: note });
+      localStorage.setItem(APPLY_LOCAL_KEY, JSON.stringify(list));
+      return P();
+    }
+    var ins = await sb.from("apply_submissions").insert({
+      company: company,
+      contact_name: name,
+      email: email,
+      plan: plan,
+      note: note || null,
+    });
+    if (ins.error) throw new Error(ins.error.message);
+    return P();
+  }
+
   async function getPostsRemote() {
+    await sb.auth.getSession();
     var r = await sb.from("posts").select("*").order("updated_at", { ascending: false });
     if (r.error) throw new Error(r.error.message);
     return (r.data || []).map(mapPostRow);
   }
 
   async function getPostRemote(id) {
+    await sb.auth.getSession();
     var r = await sb.from("posts").select("*").eq("id", id).maybeSingle();
     if (r.error || !r.data) return null;
     return mapPostRow(r.data);
@@ -439,6 +535,7 @@
   }
 
   async function getCommentsRemote(postId) {
+    await sb.auth.getSession();
     var r = await sb.from("comments").select("*").eq("post_id", postId).order("created_at", { ascending: true });
     if (r.error) throw new Error(r.error.message);
     return (r.data || []).map(mapCommentRow);
@@ -599,17 +696,37 @@
     },
 
     getContactInquiries: function () {
-      try {
-        var raw = localStorage.getItem(CONTACT_INQUIRIES_KEY);
-        var arr = raw ? JSON.parse(raw) : [];
-        if (!Array.isArray(arr)) arr = [];
-        arr = arr.slice().sort(function (a, b) {
-          return (b.at || 0) - (a.at || 0);
-        });
-        return P(arr);
-      } catch (e) {
-        return P([]);
-      }
+      if (impl === "remote" && sb) return getContactInquiriesRemote();
+      var arr = readLocalContactList().sort(function (a, b) {
+        return (b.at || 0) - (a.at || 0);
+      });
+      return P(arr);
     },
+
+    getApplySubmissions: function () {
+      if (impl === "remote" && sb) return getApplySubmissionsRemote();
+      var raw;
+      try {
+        raw = localStorage.getItem(APPLY_LOCAL_KEY);
+      } catch (e) {
+        raw = "[]";
+      }
+      var arr;
+      try {
+        arr = raw ? JSON.parse(raw) : [];
+      } catch (x) {
+        arr = [];
+      }
+      if (!Array.isArray(arr)) arr = [];
+      arr = arr.slice().sort(function (a, b) {
+        return (b.at || 0) - (a.at || 0);
+      });
+      return P(arr);
+    },
+
+    submitContactInquiry: submitContactInquiry,
+    submitApplySubmission: submitApplySubmission,
+
+    APPLY_LOCAL_KEY: APPLY_LOCAL_KEY,
   };
 })(window);

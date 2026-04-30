@@ -51,7 +51,11 @@
           </button>
           <button type="button" class="tab-btn" id="tabInquiries" role="tab" aria-selected="false">
             <svg class="icon" aria-hidden="true"><use href="../../assets/icons.svg#i-mail" /></svg>
-            문의 기록
+            문의
+          </button>
+          <button type="button" class="tab-btn" id="tabApply" role="tab" aria-selected="false">
+            <svg class="icon" aria-hidden="true"><use href="../../assets/icons.svg#i-user-plus" /></svg>
+            신청
           </button>
         </div>
 
@@ -75,13 +79,24 @@
         <div id="panel-inquiries" style="display: none">
           <h2 style="margin: 0 0 8px; font-size: 1.2rem; letter-spacing: -0.02em">
             <svg class="icon" style="vertical-align: -0.12em" aria-hidden="true"><use href="../../assets/icons.svg#i-mail" /></svg>
-            문의 기록
+            문의
           </h2>
-          <p class="muted" style="margin: 0 0 16px">
+          <p class="muted" id="inquiryHint" style="margin: 0 0 16px">
             문의하기 페이지에서 제출된 항목입니다. 이 PC 브라우저 <code style="color: #cbd5e1">localStorage</code>에만 저장되므로, 다른 기기나
             시크릿 창에서는 목록이 비어 있을 수 있습니다.
           </p>
           <div id="inquiryList" class="inquiry-list"></div>
+        </div>
+
+        <div id="panel-apply" style="display: none">
+          <h2 style="margin: 0 0 8px; font-size: 1.2rem; letter-spacing: -0.02em">
+            <svg class="icon" style="vertical-align: -0.12em" aria-hidden="true"><use href="../../assets/icons.svg#i-user-plus" /></svg>
+            신청
+          </h2>
+          <p class="muted" id="applyHint" style="margin: 0 0 16px">
+            지금 신청하기 페이지에서 제출된 항목입니다. 데모 모드에서는 이 브라우저 <code style="color: #cbd5e1">localStorage</code>에만 저장됩니다.
+          </p>
+          <div id="applyList" class="inquiry-list"></div>
         </div>
       </div>
     </main>
@@ -126,22 +141,40 @@
         var boardTabs = document.getElementById("boardTabs");
         var tabPosts = document.getElementById("tabPosts");
         var tabInquiries = document.getElementById("tabInquiries");
+        var tabApply = document.getElementById("tabApply");
         var panelPosts = document.getElementById("panel-posts");
         var panelInquiries = document.getElementById("panel-inquiries");
+        var panelApply = document.getElementById("panel-apply");
 
         if (isAdmin) {
           boardTabs.style.display = "flex";
+          if (AppData.isRemote()) {
+            var ih = document.getElementById("inquiryHint");
+            if (ih)
+              ih.textContent =
+                "문의하기 페이지에서 접수된 전체 문의입니다. Supabase에 저장되며, app_admins에 등록된 관리자만 조회할 수 있습니다.";
+            var ah = document.getElementById("applyHint");
+            if (ah)
+              ah.textContent =
+                "지금 신청하기 페이지에서 접수된 전체 신청입니다. Supabase에 저장되며, app_admins에 등록된 관리자만 조회할 수 있습니다.";
+          }
         }
 
         function showTab(which) {
           var posts = which === "posts";
+          var inquiries = which === "inquiries";
+          var apply = which === "apply";
           tabPosts.classList.toggle("tab-btn-active", posts);
-          tabInquiries.classList.toggle("tab-btn-active", !posts);
+          tabInquiries.classList.toggle("tab-btn-active", inquiries);
+          tabApply.classList.toggle("tab-btn-active", apply);
           tabPosts.setAttribute("aria-selected", posts ? "true" : "false");
-          tabInquiries.setAttribute("aria-selected", posts ? "false" : "true");
+          tabInquiries.setAttribute("aria-selected", inquiries ? "true" : "false");
+          tabApply.setAttribute("aria-selected", apply ? "true" : "false");
           panelPosts.style.display = posts ? "block" : "none";
-          panelInquiries.style.display = posts ? "none" : "block";
-          if (!posts) renderInquiries();
+          panelInquiries.style.display = inquiries ? "block" : "none";
+          panelApply.style.display = apply ? "block" : "none";
+          if (inquiries) renderInquiries();
+          if (apply) renderApply();
         }
 
         if (isAdmin) {
@@ -150,6 +183,9 @@
           });
           tabInquiries.addEventListener("click", function () {
             showTab("inquiries");
+          });
+          tabApply.addEventListener("click", function () {
+            showTab("apply");
           });
         }
 
@@ -194,7 +230,14 @@
 
         async function renderInquiries() {
           var box = document.getElementById("inquiryList");
-          var rows = await AppData.getContactInquiries();
+          var rows;
+          try {
+            rows = await AppData.getContactInquiries();
+          } catch (err) {
+            box.innerHTML =
+              '<div class="empty">' + escapeHtml(err.message || "문의 목록을 불러오지 못했습니다. app_admins 권한을 확인하세요.") + "</div>";
+            return;
+          }
           if (!rows.length) {
             box.innerHTML = '<div class="empty">저장된 문의가 없습니다.</div>';
             return;
@@ -213,6 +256,41 @@
                 escapeHtml(r.topic || "") +
                 '</span></div><div class="inq-body">' +
                 escapeHtml(r.body || "") +
+                "</div></article>"
+            );
+          }
+          box.innerHTML = html.join("");
+        }
+
+        async function renderApply() {
+          var box = document.getElementById("applyList");
+          var rows;
+          try {
+            rows = await AppData.getApplySubmissions();
+          } catch (err) {
+            box.innerHTML =
+              '<div class="empty">' + escapeHtml(err.message || "신청 목록을 불러오지 못했습니다. app_admins 권한을 확인하세요.") + "</div>";
+            return;
+          }
+          if (!rows.length) {
+            box.innerHTML = '<div class="empty">저장된 신청이 없습니다.</div>';
+            return;
+          }
+          var html = [];
+          for (var k = 0; k < rows.length; k++) {
+            var a = rows[k];
+            html.push(
+              '<article class="inquiry-card"><div class="inq-head"><span>' +
+                escapeHtml(fmt(a.at)) +
+                '</span><span>' +
+                escapeHtml(a.company || "") +
+                " · " +
+                escapeHtml(a.name || "") +
+                '</span><span class="inq-topic">' +
+                escapeHtml(a.plan || "") +
+                '</span></div><div class="inq-body">' +
+                escapeHtml(a.email || "") +
+                (a.note ? "<br/>" + escapeHtml(a.note) : "") +
                 "</div></article>"
             );
           }

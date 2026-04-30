@@ -20,6 +20,8 @@
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
     />
     <link rel="stylesheet" href="../../assets/css/styles.css" />
+    <script src="../../assets/js/site-config.js"></script>
+    <script defer src="../../assets/js/app-data.js"></script>
   </head>
   <body>
     <header class="site-header">
@@ -45,7 +47,7 @@
           <svg class="icon" aria-hidden="true"><use href="../../assets/icons.svg#i-user-plus" /></svg>
           지금 신청하기
         </h1>
-        <p class="hint">신청서는 데모용으로 브라우저에만 저장됩니다.</p>
+        <p class="hint" id="hintApply">신청서는 데모용으로 브라우저에만 저장됩니다.</p>
         <div id="msg" class="msg" role="status"></div>
         <form id="f" method="post" action="#">
           <div class="field">
@@ -81,30 +83,37 @@
     </main>
 
     <script>
-      (function () {
-        var KEY = "demo_apply_submissions_v1";
+      document.addEventListener("DOMContentLoaded", async function () {
+        try {
+          await AppData.init();
+        } catch (e) {
+          console.error(e);
+        }
+        var hint = document.getElementById("hintApply");
+        if (AppData.isRemote()) {
+          hint.textContent = "Supabase에 연결된 경우 신청은 서버에 저장되며, 관리자가 커뮤니티 보드에서 확인할 수 있습니다.";
+        }
         var msg = document.getElementById("msg");
-        document.getElementById("f").addEventListener("submit", function (e) {
+        document.getElementById("f").addEventListener("submit", async function (e) {
           e.preventDefault();
-          var row = {
-            at: Date.now(),
-            company: document.getElementById("company").value.trim(),
-            name: document.getElementById("name").value.trim(),
-            email: document.getElementById("email").value.trim(),
-            plan: document.getElementById("plan").value,
-            note: document.getElementById("note").value.trim(),
-          };
-          var list = [];
+          msg.className = "msg";
           try {
-            list = JSON.parse(localStorage.getItem(KEY) || "[]");
-          } catch (x) {}
-          list.push(row);
-          localStorage.setItem(KEY, JSON.stringify(list));
-          msg.className = "msg show ok";
-          msg.textContent = "신청이 저장되었습니다.";
-          e.target.reset();
+            await AppData.submitApplySubmission({
+              company: document.getElementById("company").value,
+              name: document.getElementById("name").value,
+              email: document.getElementById("email").value,
+              plan: document.getElementById("plan").value,
+              note: document.getElementById("note").value,
+            });
+            msg.textContent = AppData.isRemote() ? "신청이 접수되었습니다." : "신청이 저장되었습니다.";
+            msg.className = "msg show ok";
+            e.target.reset();
+          } catch (err) {
+            msg.textContent = err.message || "제출에 실패했습니다.";
+            msg.className = "msg show err";
+          }
         });
-      })();
+      });
     </script>
   </body>
 </html>
